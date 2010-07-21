@@ -13,11 +13,10 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 
 =head1 SYNOPSIS
-
 
 list all repository of c9s:
 
@@ -30,6 +29,10 @@ clone Plack repository from miyagawa:
 or:
 
     $ gh clone miyagawa Plack
+
+    $ gh clone gugod Social http
+
+    $ gh clone clkao Web-Hippie ro
 
 clone from read-only uri:
 
@@ -48,6 +51,10 @@ to clone all repository of miyagawa:
     $ gh cloneall miyagawa 
 
     $ gh cloneall clkao ro  # read-only
+
+to fork project
+
+    $ gh fork clkao AnyMQ
 
 =head1 AUTHOR
 

@@ -13,22 +13,41 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 =head1 SYNOPSIS
 
+
+list all repository of c9s:
+
     $ gh list c9s
 
-    $ gh clone miyagawa/Plack
+clone Plack repository from miyagawa:
 
-    $ gh clone miyagawa/Plack ssh
+    $ gh clone miyagawa/Plack   # default: read-only 
+
+or:
+
+    $ gh clone miyagawa Plack
+
+clone from read-only uri:
+
+    $ gh clone miyagawa/Plack ro 
+
+clone from ssh uri:
+
+    $ gh clone miyagawa/Plack ssh  
+
+search repository:
 
     $ gh search Plack
 
+to clone all repository of miyagawa:
+
     $ gh cloneall miyagawa 
 
-    $ gh cloneall miyagawa ro
+    $ gh cloneall clkao ro  # read-only
 
 =head1 AUTHOR
 

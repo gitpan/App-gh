@@ -1,7 +1,66 @@
 #!/usr/bin/env perl
 use LWP::Simple;
 use JSON;
+use utf8;
 use warnings;
+
+my $screen_width = 92;
+
+sub print_list {
+    my @lines = @_;
+
+    my $column_w = 0;
+
+    map { 
+        $column_w = length($_->[0]) if length($_->[0]) > $column_w ; 
+    } @lines;
+
+    for my $arg ( @lines ) {
+        my $title = shift @$arg;
+
+        my $padding = int($column_w) - length( $title );
+
+        if ( ! $ENV{NO_WRAP} && ( $column_w + 3 + length( join " ",@$arg) ) > $screen_width ) {
+            # wrap description
+            my $string = $title . " " x $padding . " - " . join(" ",@$arg) . "\n";
+            $string =~ s/\n//g;
+
+            my $cnt = 0;
+            my $firstline = 1;
+            my $tab = 4;
+            my $wrapped = 0;
+            while( $string =~ /(.)/g ) {
+                $cnt++;
+
+                my $c = $1;
+                print $c;
+
+                if( $c =~ /[ \,]/ && $firstline && $cnt > $screen_width ) {
+                    print "\n" . " " x ($column_w + 3 + $tab );
+                    $firstline = 0;
+                    $cnt = 0;
+                    $wrapped = 1;
+                }
+                elsif( $c =~ /[ \,]/ && ! $firstline && $cnt > ($screen_width - $column_w) ) {
+                    print "\n" . " " x ($column_w + 3 + $tab );
+                    $cnt = 0;
+                    $wrapped = 1;
+                }
+            }
+            print "\n";
+            print "\n" if $wrapped;
+        }
+        else {
+            print $title;
+            print " " x $padding;
+            print " - ";
+            print join " " , @$arg;
+            print "\n";
+        }
+
+    }
+
+}
 
 sub get_github_auth {
     open FH , "<" , $ENV{HOME} . "/.gitconfig";
@@ -38,43 +97,57 @@ show help message;
 
     $ gh help
 
-list all repository of c9s:
+* list:
 
-    $ gh list c9s
+    list all repository of c9s:
 
-clone Plack repository from miyagawa:
+        $ gh list c9s
 
-    $ gh clone miyagawa/Plack   # default: read-only 
+    if you dont want text wrapped:
 
-or:
+        $ NO_WRAP=1 gh list c9s
 
-    $ gh clone miyagawa Plack
+* clone:
 
-    $ gh clone gugod Social http
+    clone Plack repository from miyagawa:
 
-    $ gh clone clkao Web-Hippie ro
+        $ gh clone miyagawa/Plack   # default: read-only 
 
-clone from read-only uri:
+    or:
 
-    $ gh clone miyagawa/Plack ro 
+        $ gh clone miyagawa Plack
 
-clone from ssh uri:
+        $ gh clone gugod Social http
 
-    $ gh clone miyagawa/Plack ssh  
+        $ gh clone clkao Web-Hippie ro
 
-search repository:
+    clone from read-only uri:
 
-    $ gh search Plack
+        $ gh clone miyagawa/Plack ro 
 
-to clone all repository of miyagawa:
+    clone from ssh uri:
 
-    $ gh cloneall miyagawa 
+        $ gh clone miyagawa/Plack ssh  
 
-    $ gh cloneall clkao ro  # read-only
+* search:
 
-to fork project
+    search repository:
 
-    $ gh fork clkao AnyMQ
+        $ gh search Plack
+
+* cloneall:
+
+    to clone all repository of miyagawa:
+
+        $ gh cloneall miyagawa 
+
+        $ gh cloneall clkao ro  # read-only
+
+* fork;
+
+    to fork project
+
+        $ gh fork clkao AnyMQ
 
 END
     exit;
@@ -85,26 +158,15 @@ elsif( $act eq 'search' || $act eq 's' ) {
     my $json = get 'http://github.com/api/v2/json/repos/search/' . $keyword;
 
     my $result = decode_json( $json );
-    my $width = 78;
-    my $column_w = 0;
 
     my @ary = ();
     for my $repo ( @{ $result->{repositories} } ) {
         my $name = sprintf "%s/%s", $repo->{username} , $repo->{name};
         my $desc = $repo->{description};
-        $column_w = length($name) if length($name) > $column_w ;
-        push @ary, { name => $name , desc => $desc };
+        push @ary, [ $name , $desc ];
     }
 
-    for my $arg ( @ary ) {
-        print $arg->{name};
-        my $padding = $column_w - length( $arg->{name} );
-        print " " x $padding;
-        print " - ";
-        print $arg->{desc};
-        print "\n";
-
-    }
+    print_list @ary;
 }
 elsif( $act eq 'clone' || $act eq 'c' ) {
     my $user;
@@ -134,10 +196,15 @@ elsif( $act eq 'list' )
     my $acc = shift;
     my $json = get 'http://github.com/api/v2/json/repos/show/' . $acc;
     my $data = decode_json( $json );
+    my @lines = ();
     for my $repo ( @{ $data->{repositories} } ) {
         my $repo_name = $repo->{name};
-        print $acc . "/" . $repo->{name}  . ' - ' . ($repo->{description}||"") . "\n";
+        push @lines , [  
+            $acc . "/" . $repo->{name} ,
+            ($repo->{description}||"")
+        ];
     }
+    print_list @lines;
 }
 elsif( $act eq 'cloneall' || $act eq 'ca' ) {
     my $acc = shift;

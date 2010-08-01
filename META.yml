@@ -20,9 +20,11 @@ no_index:
     - inc
     - t
 requires:
+  Exporter::Lite: 0
+  File::Temp: 0
   JSON: 0
   JSON::XS: 0
   LWP::Simple: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.04
+version: 0.05

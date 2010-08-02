@@ -158,6 +158,18 @@ show help message;
             c9s/App-gh - watchers(4) forks(1)
           gugod/App-gh - watchers(1) forks(0)
 
+* pull from other's fork:
+
+    pull from gugod/project.git branch master (default):
+
+        $ cd project
+        $ gh pullfork gugod           
+
+    pull from gugod/project.git branch feature:
+
+        $ cd project
+        $ gh pullfork gugod feature    
+
 END
     exit;
 
@@ -199,6 +211,30 @@ elsif( $act eq 'clone' || $act eq 'c' ) {
     }
     print $uri . "\n";
     system( qq{git clone $uri} );
+}
+
+
+
+elsif( $act eq 'pullfork' || $act eq 'pf' ) 
+{
+    my $acc  = shift;
+    my $branch = shift || 'master';
+
+    die "git config not found." if  ! -e ".git/config" ;
+    my $config = parse_config( ".git/config" );
+
+    # git://github.com/miyagawa/Tatsumaki.git
+    for my $remote ( values %{ $config->{remote} } ) {
+        if ( $remote->{url} =~ m{git://github.com/(.*?)/(.*?).git} 
+            || $remote->{url} =~ m{git\@github.com:(.*?)/(.*?).git} ) 
+        {
+            my ( $my, $repo ) = ( $1, $2 );
+            my $uri = sprintf( qq(git://github.com/%s/%s.git) , $acc , $repo );
+            qx(git pull $uri $branch);
+            last;
+        }
+    }
+
 }
 elsif( $act eq 'list' ) 
 {

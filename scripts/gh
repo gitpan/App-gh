@@ -7,6 +7,7 @@ use constant debug => $ENV{DEBUG};
 use App::gh;
 
 $|++;
+binmode STDOUT, ':utf8';
 
 my $screen_width = 92;
 
@@ -163,12 +164,12 @@ show help message;
     pull from gugod/project.git branch master (default):
 
         $ cd project
-        $ gh pullfork gugod           
+        $ gh pull gugod           
 
     pull from gugod/project.git branch feature:
 
         $ cd project
-        $ gh pullfork gugod feature    
+        $ gh pull gugod feature    
 
 END
     exit;
@@ -215,26 +216,9 @@ elsif( $act eq 'clone' || $act eq 'c' ) {
 
 
 
-elsif( $act eq 'pullfork' || $act eq 'pf' ) 
+elsif( $act eq 'pullfork' || $act eq 'pull' || $act eq 'pf' ) 
 {
-    my $acc  = shift;
-    my $branch = shift || 'master';
-
-    die "git config not found." if  ! -e ".git/config" ;
-    my $config = parse_config( ".git/config" );
-
-    # git://github.com/miyagawa/Tatsumaki.git
-    for my $remote ( values %{ $config->{remote} } ) {
-        if ( $remote->{url} =~ m{git://github.com/(.*?)/(.*?).git} 
-            || $remote->{url} =~ m{git\@github.com:(.*?)/(.*?).git} ) 
-        {
-            my ( $my, $repo ) = ( $1, $2 );
-            my $uri = sprintf( qq(git://github.com/%s/%s.git) , $acc , $repo );
-            qx(git pull $uri $branch);
-            last;
-        }
-    }
-
+    App::gh::command->dispatch('pull', @_ );
 }
 elsif( $act eq 'list' ) 
 {
@@ -255,8 +239,15 @@ elsif( $act eq 'cloneall' || $act eq 'ca' ) {
     my $acc = shift;
     my $attr = shift || 'ro';
 
+    _info "Getting repository list from github: $acc";
     my $json = get 'http://github.com/api/v2/json/repos/show/' . $acc;
     my $data = decode_json( $json );
+
+    _info "Will clone repositories below:";
+    for my $repo ( @{ $data->{repositories} } ) {
+        print "  " . $repo->{name} . "\n";
+    }
+
 
     for my $repo ( @{ $data->{repositories} } ) {
         my $repo_name = $repo->{name};
@@ -322,11 +313,13 @@ elsif( $act eq 'fork' ) {
         $repo = shift;
     }
 
+
     my $auth = get_github_auth();
 
     unless( $auth ) {
         die "Github authtoken not found. Can not fork repository.\n";
     }
+
 
     unless ( $repo ) {
         # detect .git directory
@@ -334,24 +327,30 @@ elsif( $act eq 'fork' ) {
             my $config = parse_config( ".git/config" );
             for my $remote ( values %{ $config->{remote} } ) {
                 # git://github.com/miyagawa/Tatsumaki.git
-                if ( $remote->{url} 
-                        =~ m{git://github.com/(.*?)/(.*?).git}  ) {
-                        if( $1 && $2 ) {
-                            ($user,$repo) = ( $1 , $2 );
+                # http://github.com/miyagawa/Tatsumaki.git
+                if ( $remote->{url} =~ m{(?:git|https?)://github.com/(.*?)/(.*?).git} 
+                    || $remote->{url} =~ m{git\@github.com:(.*?)/(.*?).git} ) 
+                {
+                    die unless( $1 || $2 );
 
-                            _info "Found GitHub repository of $user/$repo";
+                    ($user,$repo) = ( $1 , $2 );
 
-                            my $remote_uri = qq( git\@github.com:@{[ $auth->{user} ]}/$repo.git);
+                    _info "Found GitHub repository of $user/$repo";
 
-                            _info "Adding remote '@{[ $auth->{user} ]}' => $remote_uri";
+                    my $_remotes = qx(git remote | grep @{[ $auth->{user} ]});
+                    if( $_remotes ) {
+                        die "Remote @{[ $auth->{user} ]} exists.\n";
+                    }
 
-                            # url = git@github.com:c9s/App-gh.git
-                            my $cmd = qq( git remote add @{[ $auth->{user} ]} $remote_uri);
-                            _debug $cmd;
-                            qx($cmd);
+                    my $remote_uri = qq( git\@github.com:@{[ $auth->{user} ]}/$repo.git);
+                    _info "Adding remote '@{[ $auth->{user} ]}' => $remote_uri";
 
-                            _info "Remote added.";
-                        }
+                    # url = git@github.com:c9s/App-gh.git
+                    my $cmd = qq( git remote add @{[ $auth->{user} ]} $remote_uri);
+                    _debug $cmd;
+                    qx($cmd);
+
+                    _info "Remote added.";
                 }
             }
         }
@@ -401,7 +400,7 @@ $VAR1 = {
     print "  Pushed at:     " . $data->{pushed_at} . "\n";
     print "  Fork:          " . $data->{'fork'} . "\n";
     print "  URL:           " . $data->{url} . "\n";
-    print "  Homepage:      " . $data->{homepage} . "\n";
+    print "  Homepage:      " . ($data->{homepage}||'') . "\n";
 }
 
 

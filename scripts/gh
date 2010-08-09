@@ -6,6 +6,7 @@ use warnings;
 use constant debug => $ENV{DEBUG};
 use App::gh;
 use App::gh::Utils;
+use App::gh::Command;
 
 $|++;
 binmode STDOUT, ':utf8';
@@ -79,95 +80,8 @@ $SIG{INT} = sub {
 
 if( ! $act || $act eq 'help' ) 
 {
-    print <<'END';
-
-App::gh
-
-show help message;
-
-    $ gh help
-
-* list:
-
-    list all repository of c9s:
-
-        $ gh list c9s
-
-    if you want text wrapped:
-
-        $ WRAP=1 gh list c9s
-
-* clone:
-
-    clone Plack repository from miyagawa:
-
-        $ gh clone miyagawa/Plack   # default: read-only 
-
-    or:
-
-        $ gh clone miyagawa Plack
-
-        $ gh clone gugod Social http
-
-        $ gh clone clkao Web-Hippie ro
-
-    clone from read-only uri:
-
-        $ gh clone miyagawa/Plack ro 
-
-    clone from ssh uri:
-
-        $ gh clone miyagawa/Plack ssh  
-
-* search:
-
-    search repository:
-
-        $ gh search Plack
-
-* cloneall:
-
-    to clone all repository of miyagawa:
-
-        $ gh cloneall miyagawa 
-
-        $ gh cloneall clkao ro  # read-only
-
-* fork;
-
-    to fork project:
-
-        $ gh fork clkao AnyMQ
-
-    to fork current project:
-        
-        $ cd clkao/AnyMQ
-        $ gh fork
-
-* network:
-
-    to show fork network:
-
-        $ cd App-gh/
-        $ gh network
-            c9s/App-gh - watchers(4) forks(1)
-          gugod/App-gh - watchers(1) forks(0)
-
-* pull from other's fork:
-
-    pull from gugod/project.git branch master (default):
-
-        $ cd project
-        $ gh pull gugod           
-
-    pull from gugod/project.git branch feature:
-
-        $ cd project
-        $ gh pull gugod feature    
-
-END
+    App::gh::Command->dispatch( 'help' , @ARGV );
     exit;
-
 }
 elsif( $act eq 'search' || $act eq 's' ) {
     my $keyword = shift;
@@ -212,7 +126,7 @@ elsif( $act eq 'clone' || $act eq 'c' ) {
 
 elsif( $act eq 'pullfork' || $act eq 'pull' || $act eq 'pf' ) 
 {
-    App::gh::command->dispatch('pull', @_ );
+    App::gh::Command->dispatch('pull', @_ );
 }
 elsif( $act eq 'list' ) 
 {
@@ -269,8 +183,8 @@ elsif( $act eq 'cloneall' || $act eq 'ca' ) {
 }
 elsif( $act eq 'network' ) {
     die "Git config not found." if ( ! -e ".git/config" );
-    App::gh::command->dispatch('network', @_ );
+    App::gh::Command->dispatch('network', @_ );
 }
 elsif( $act eq 'fork' ) {
-    App::gh::command->dispatch('fork', @_ );
+    App::gh::Command->dispatch('fork', @_ );
 }

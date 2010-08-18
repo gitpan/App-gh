@@ -19,9 +19,8 @@ sub parse_remote_param {
 }
 
 sub run {
-    my $self = shift;
-    my $acc  = shift;
-    my $branch = shift || 'master';
+    my ($self,$acc,$branch) = @_;
+    $branch ||= 'master';
 
     die "git config not found." if  ! -e ".git/config" ;
     my $config = parse_config( ".git/config" );
@@ -30,7 +29,7 @@ sub run {
     for my $remote ( values %{ $config->{remote} } ) {
         if( my ($my, $repo) = parse_remote_param( $remote->{url} ) )
         {
-            my $uri = sprintf( qq(git://github.com/%s/%s.git) , $my , $repo );
+            my $uri = sprintf( qq(git://github.com/%s/%s.git) , $acc , $repo );
             qx(git pull $uri $branch);
             last;
         }

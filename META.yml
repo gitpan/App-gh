@@ -24,9 +24,11 @@ requires:
   App::CLI: 0
   Exporter::Lite: 0
   File::Path: 0
+  File::Spec: 0
+  File::Temp: 0
   JSON: 0
   LWP::Simple: 0
 resources:
   license: http://dev.perl.org/licenses/
   repository: http://github.com/c9s/App-gh
-version: 0.13
+version: 0.14

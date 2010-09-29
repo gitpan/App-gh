@@ -27,6 +27,7 @@ requires:
   File::Spec: 0
   File::Temp: 0
   HTML::Strip: 0
+  IO::Pager: 0
   JSON: 0
   LWP::Simple: 0
   Text::Wrap: 0
@@ -35,4 +36,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: http://github.com/c9s/App-gh
-version: 0.161
+version: 0.162

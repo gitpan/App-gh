@@ -19,7 +19,6 @@ no_index:
   directory:
     - inc
     - t
-    - xt
 requires:
   App::CLI: 0
   Exporter::Lite: 0
@@ -36,4 +35,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: http://github.com/c9s/App-gh
-version: 0.163
+version: 0.164

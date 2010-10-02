@@ -2,6 +2,14 @@ Revision history for App-gh
 
         Understand link to github in fork command (CHORNY)
 
-0.01    Date/time
-        First version, released on an unsuspecting world.
+0.0164  Áù 10/ 2 21:11:39 2010
+        * add new command `recent`.
+        * update repository with `git pull --rebase --all`
+
+0.0165  Áù 10/ 2 21:19:28 2010
+        * provide a --skip-exists | -s option for command `all`.
+
+            git all c9s -s --into .
+
+          this will clone new repositories only.
 

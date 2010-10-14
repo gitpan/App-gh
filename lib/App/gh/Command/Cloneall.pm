@@ -13,12 +13,17 @@ sub options { (
         "prompt" => "prompt",
         "into=s" => "into",
         "s|skip-exists" => "skip_exists",
+
+        "ssh" => "protocal_ssh",    # git@github.com:c9s/repo.git
+        "http" => "protocal_http",  # http://github.com/c9s/repo.git
+        "https" => "https",         # https://github.com/c9s/repo.git
+        "git|ro"   => "git"         # git://github.com/c9s/repo.git
     ) }
+
 
 sub run {
     my $self = shift;
-    my $acc = shift;
-    my $attr = shift || 'ro';
+    my $acc  = shift;
 
     $self->{into} ||= $acc;
 
@@ -61,20 +66,12 @@ sub run {
             next if( $ans =~ /n/ );
         }
 
-        my $uri;
-        if( $attr eq 'ro' ) {
-            $uri = sprintf "git://github.com/%s/%s.git" , $acc , $repo_name;
-        }
-        elsif( $attr eq 'ssh' ) {
-            $uri = sprintf "git\@github.com:%s/%s.git" , $acc , $repo_name;
-        }
+        my $uri = $self->gen_uri( $acc, $repo_name );
         print $uri . "\n" if $self->{verbose};
-
 
 
         if( -e $local_repo_name ) {
             print("Found $local_repo_name, skipped.\n"),next if $self->{skip_exists};
-
 
             chdir $local_repo_name;
             print "Updating $local_repo_name from remotes ...\n";

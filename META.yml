@@ -37,4 +37,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: http://github.com/c9s/App-gh
-version: 0.18
+version: 0.20

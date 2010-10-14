@@ -1,97 +1,128 @@
-# App-gh
+# App::gh
 
 ## SYNOPSIS
 
-
-    App::gh
 
     show help message;
 
         $ gh help
 
-    * recent:
-        
-        get github recent activities.
+## COMMANDS
 
-    * list:
+### recent
 
-        list all repository of c9s:
+get github recent activities.
 
-            $ gh list c9s
+    $ gh recent 
 
-        if you want text wrapped:
+### list:
 
-            $ WRAP=1 gh list c9s
+list all repository of c9s:
 
-    * clone:
+    $ gh list c9s
 
-        clone Plack repository from miyagawa:
+if you want text wrapped:
 
-            $ gh clone miyagawa/Plack   # default: read-only 
+    $ WRAP=1 gh list c9s
 
-        or:
+### clone
 
-            $ gh clone miyagawa Plack
+clone Plack repository from miyagawa:
 
-            $ gh clone gugod Social http
+    $ gh clone miyagawa/Plack   # default: read-only 
 
-            $ gh clone clkao Web-Hippie ro
+or:
 
-        clone from read-only uri:
+    $ gh clone miyagawa Plack
 
-            $ gh clone miyagawa/Plack ro 
+    $ gh clone gugod Social --http
 
-        clone from ssh uri:
+    $ gh clone gugod Social --https
 
-            $ gh clone miyagawa/Plack ssh  
+    $ gh clone clkao Web-Hippie --ro
 
-    * search:
+clone from read-only uri:
 
-        search repository:
+    $ gh clone miyagawa/Plack --ro 
 
-            $ gh search Plack
+clone from ssh uri:
 
-    * all | cloneall:
+    $ gh clone miyagawa/Plack --ssh  
 
-        to clone all repository of miyagawa:
+### search
 
-            $ gh all miyagawa 
+search repository:
 
-            $ gh all facebook --into facebook
+    $ gh search Plack
 
-            $ gh all perl6 --into perl6-stuff
+### all
 
-            $ gh all perl6 --into perl6-stuff --prompt 
+to clone all repository of miyagawa:
 
-            $ gh all perl6 --into perl6-stuff --verbose --prompt 
+    $ gh all miyagawa 
 
-            $ gh all clkao ro  # read-only
+    $ gh all facebook --into facebook
 
-    * update:
+    $ gh all perl6 --into perl6-stuff
 
-        run (pull/push) repository changes from/to remotes, and `git remote update --prune`
+    $ gh all perl6 --into perl6-stuff --prompt 
 
-            $ gh update
+    $ gh all perl6 --into perl6-stuff --verbose --prompt 
 
-    * fork;
+    $ gh all clkao --ro  # read-only
 
-        to fork project:
+### update
 
-            $ gh fork clkao AnyMQ
+run (pull/push) repository changes from/to remotes, and `git remote update --prune`
 
-        to fork current project:
+    $ gh update
 
-            $ cd clkao/AnyMQ
-            $ gh fork
+### fork
 
-    * network:
+to fork project:
 
-        to show fork network:
+    $ gh fork clkao AnyMQ
 
-            $ cd App-gh/
-            $ gh network
-                c9s/App-gh - watchers(4) forks(1)
-            gugod/App-gh - watchers(1) forks(0)
+to fork current project:
+
+    $ cd clkao/AnyMQ
+    $ gh fork
+
+### network
+
+to show fork network:
+
+    $ cd App-gh/
+    $ gh network
+        c9s/App-gh - watchers(4) forks(1)
+      gugod/App-gh - watchers(1) forks(0)
+
+
+### pull
+
+Pull command behavior
+
+    - Merge from fork repository if --merge option is specified.
+    - Create a branch from fork/master (default branch master) for fork.
+    - Checkout the branch fork/master (default branch master).
+    - Pull changes from fork repository to the branch
+
+first , switch path to your repository:
+
+    $ cd App-gh/
+
+to merge gugod/master to local/master branch
+
+    $ gh pull gugod
+
+to merge gugod/feature1 to local/feature1 
+
+    $ gh pull gugod feature1
+
+to merge gugod/feature1 to local/master 
+
+    $ gh pull gugod feature1
+
 
 ## INSTALLATION
 

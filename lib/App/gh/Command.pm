@@ -21,6 +21,48 @@ sub invoke {
     }
 }
 
+sub parse_remote_param {
+    my $uri = shift;
+    if ( $uri =~ m{(?:git|https?)://github.com/(.*?)/(.*?).git} 
+        || $uri =~ m{git\@github.com:(.*?)/(.*?).git} ) 
+    {
+        return ( $1 , $2 )
+            if( $1 && $2 );
+    }
+    return undef;
+}
+
+
+sub get_current_repo {
+    my $self = shift;
+    my $config = parse_config( ".git/config" );
+    for my $remote ( values %{ $config->{remote} } ) {
+        if( my ($my, $repo) = parse_remote_param( $remote->{url} ) )
+        {
+            return ($my,$repo);
+        }
+    }
+}
+
+
+sub gen_uri {
+    my ($self,$acc,$repo) = @_;
+
+    if( $self->{protocal_ssh} ) {
+        return sprintf( 'git@github.com:%s/%s.git' , $acc, $repo );
+    }
+    elsif( $self->{protocal_http} ) {
+        return sprintf( 'http://github.com/%s/%s.git' , $acc , $repo );
+    }
+    elsif( $self->{protocal_https}) {
+        return sprintf( 'https://github.com/%s/%s.git' , $acc , $repo );
+    }
+    elsif( $self->{protocal_git} ) {
+        return sprintf( 'git://github.com/%s/%s.git', $acc, $repo );
+    }
+    return sprintf( 'git://github.com/%s/%s.git', $acc, $repo );
+}
+
 sub global_help {
     # XXX: scan command classes
     print <<'END';

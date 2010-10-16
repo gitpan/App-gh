@@ -13,6 +13,9 @@ use App::gh::Utils;
 
     gh upload App-gh.tar.gz c9s/App-gh
 
+    gh upload App-gh.tar.gz --cpan   # also upload to cpan
+
+
 =cut
 
 
@@ -37,16 +40,14 @@ sub run {
     );
 
     $repo ||= $auth->{user} . '/' . $self->get_current_repo();
-    print "Uploading $file to $repo\n";
-
+    print "Uploading $file to Github: $repo\n";
     eval {
         $gh->upload(
             repos => $repo,
             file  => $file,
         );
     };
-    print $! if $@;
-
+    print $@ . ':' . $! if $@;
     print "Done\n";
 }
 

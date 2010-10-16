@@ -26,6 +26,11 @@ sub run {
         die "Github authtoken not found.\n";
     }
 
+    if( $self->{cpanupload} ) {
+        print "Uploading file to CPAN.\n";
+        $self->cpanupload( $file );
+    }
+
     my $gh = Net::GitHub::Upload->new(
         login => $auth->{user},
         token => $auth->{token},
@@ -34,14 +39,13 @@ sub run {
     $repo ||= $auth->{user} . '/' . $self->get_current_repo();
     print "Uploading $file to $repo\n";
 
-    $gh->upload(
-        repos => $repo,
-        file  => $file,
-    );
-
-    if( $self->{cpanupload} ) {
-        $self->cpanupload( $file );
-    }
+    eval {
+        $gh->upload(
+            repos => $repo,
+            file  => $file,
+        );
+    };
+    print $! if $@;
 
     print "Done\n";
 }

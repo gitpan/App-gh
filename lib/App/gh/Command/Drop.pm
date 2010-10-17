@@ -6,6 +6,10 @@ use App::gh::Utils;
 use LWP::Simple qw(get);
 use JSON;
 
+=head1 NAME
+
+App::gh::Command::Drop - drop a repository.
+
 =head1 USAGE
 
     $ gh drop [repository]
@@ -15,6 +19,8 @@ use JSON;
 sub run {
     my ($self,$repo) = @_;
     my $auth = get_github_auth();
+
+    $repo =~ s{::}{-}g;
 
     unless( $auth ) {
         die "Github authtoken not found. Can not fork repository.\n";

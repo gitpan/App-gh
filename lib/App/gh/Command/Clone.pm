@@ -7,6 +7,23 @@ use LWP::Simple qw(get);
 use App::gh::Utils;
 use JSON;
 
+=head1 NAME
+
+App::gh::Command::Clone - clone repository
+
+=head1 DESCRIPTION
+
+balh
+
+=head1 OPTIONS
+
+    --verbose
+    --ssh
+    --http
+    --https
+    --git|ro
+
+=cut
 
 sub options { (
     "verbose" => "verbose",
@@ -15,8 +32,6 @@ sub options { (
     "https" => "https",         # https://github.com/c9s/repo.git
     "git|ro"   => "git"         # git://github.com/c9s/repo.git
 ) }
-
-
 
 sub run {
     my ($self) = shift;

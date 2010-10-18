@@ -12,14 +12,13 @@ requires 'App::CLI';
 requires 'File::Path';
 requires 'File::Spec';
 requires 'LWP::Simple';
-requires 'Exporter::Lite';
 requires 'URI';
 requires 'Text::Wrap';
 requires 'URI';
 requires 'JSON';
 requires 'JSON::XS';
 requires 'HTML::Strip';
-requires 'IO::Pager';
+# requires 'IO::Pager';
 
 install_script 'scripts/gh';
 

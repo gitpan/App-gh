@@ -35,9 +35,9 @@ or:
 
     $ gh clone miyagawa Plack
 
-    $ gh clone gugod Social --http
+    $ gh clone foo Social --http
 
-    $ gh clone gugod Social --https
+    $ gh clone foo Social --https
 
     $ gh clone clkao Web-Hippie --ro
 
@@ -71,11 +71,6 @@ to clone all repository of miyagawa:
 
     $ gh all clkao --ro  # read-only
 
-### update
-
-run (pull/push) repository changes from/to remotes, and `git remote update --prune`
-
-    $ gh update
 
 ### fork
 
@@ -95,34 +90,49 @@ to show fork network:
     $ cd App-gh/
     $ gh network
         c9s/App-gh - watchers(4) forks(1)
-      gugod/App-gh - watchers(1) forks(0)
-
+      foo/App-gh - watchers(1) forks(0)
 
 ### pull
 
 Pull command behavior
 
-    - Merge from fork repository if --merge option is specified.
-    - Create a branch from fork/master (default branch master) for fork.
-    - Checkout the branch fork/master (default branch master).
-    - Pull changes from fork repository to the branch
+    - Add remote for a fork
+    - Fetch remote
+    - Merge from fork branch if --merge option is specified.
+    - Create a branch if --branch is specified.
 
-first , switch path to your repository:
+First , switch path to your repository:
 
     $ cd App-gh/
 
-to merge gugod/master to local/master branch
+Show up the network by running pull command with no arguments:
 
-    $ gh pull gugod
+    $ gh pull
+    .... 
 
-to merge gugod/feature1 to local/feature1 
+To pull from foo and add remote:
 
-    $ gh pull gugod feature1
+    $ gh pull foo
+    $ git log foo/master   # to show changes
 
-to merge gugod/feature1 to local/master 
+To pull from foo and merge changes:
 
-    $ gh pull gugod feature1
+    $ gh pull foo -m
 
+To merge foo/feature1 to local/master 
+
+    $ gh pull foo feature1 -m
+
+To merge changes from foo/master and create a tracked branch:
+
+    $ gh pull foo --merge --branch
+    $ gh pull foo -m -b
+
+### update
+
+Run (pull/push) repository changes from/to remotes, and `git remote update --prune`
+
+    $ gh update
 
 ## INSTALLATION
 

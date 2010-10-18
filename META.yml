@@ -32,8 +32,7 @@ requires:
   LWP::Simple: 0
   Text::Wrap: 0
   URI: 0
-  XML::Atom::Feed: 0
 resources:
   license: http://dev.perl.org/licenses/
   repository: http://github.com/c9s/App-gh
-version: 0.233
+version: 0.236

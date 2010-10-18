@@ -12,13 +12,24 @@ App::gh::Command::Pull - pull changes from other forks.
 
 =head1 USAGE
 
-    $ gh pull [id]
+First you show up all fork network:
+
+    $ gh network
+
+Then you can pull changes from one:
+
+    $ gh pull [id] (from branch) (to branch)
+
+For example:
+
+    $ gh pull gugod
+
+This will create a gugod-master branch:
 
 =cut
 
 sub options { (
         "m|merge" => "merge",
-        "b|branch" => "branch",
         "verbose" => "verbose",
 
         "ssh" => "protocal_ssh",    # git@github.com:c9s/repo.git
@@ -30,10 +41,33 @@ sub options { (
 sub run {
     my ( $self, $acc, $from_branch, $to_branch ) = @_;
 
-    die "require user id" unless $acc;
+    unless ( $acc ) {
+        print "Usage: \n";
+        print "     gh pull [userid] (from branch) (to branch)\n\n";
+
+
+
+        my $origin_url = qx( git remote -v | grep origin | grep fetch );
+        my ($userid,$repo) = ($origin_url =~ m{:(\w+)/(.*?)\.git});
+
+        print "Available forks:\n";
+
+        # XXX: refactor this ... XD
+        my $objs = api_request(qq(repos/show/$userid/$repo/network));
+        my $networks = $objs->{network};
+        for my $net ( @$networks ) {
+            print sprintf( "% 20s - watchers(%d) forks(%d)\n"
+                , $net->{owner} . '/' . $net->{name}
+                , $net->{watchers}
+                , $net->{forks}
+                );
+        }
+        print "\n";
+        return;
+    }
 
     $from_branch ||= 'master';
-    $to_branch   ||= $from_branch;
+    $to_branch   ||= 'master';
 
     if( qx(git diff) ) {
         die "Your repository is diryt\n";
@@ -45,28 +79,21 @@ sub run {
     my $current_repo = $self->get_current_repo();
     my $fork_uri = $self->gen_uri( $acc , $current_repo );
 
+    unless( qx(git remote | grep $acc ) ) {
+        print "Adding remote [$acc] for [$fork_uri]\n";
+        qx(git remote add $acc $fork_uri);
+    }
+
+    print "Fetching $acc ...\n";
+    qx(git fetch $acc);
+
     if( $self->{merge} ) {
-        print "Merging changes from [$fork_uri / $from_branch] to $to_branch\n";
+        print "Checking out $to_branch ...\n";
         qx(git checkout $to_branch);
-        qx(git pull $fork_uri $from_branch);
+
+        print "Merging changes from [$acc/$from_branch] to $to_branch\n";
+        qx(git merge $acc/$from_branch);
     }
-
-
-    # check if fork branch exists
-    unless( qx(git branch | grep $fork_branch_name) ) {
-        print "Creating branch $fork_branch_name from $to_branch...\n";
-        qx(git branch $fork_branch_name $to_branch);
-    }
-
-    print "Checking out $fork_branch_name\n";
-    qx(git checkout $fork_branch_name );
-
-    print "Pulling changes from [$fork_uri]\n";
-    qx(git pull $fork_uri $from_branch);
-
-    print "Adding remote [$acc] for [$fork_uri]\n";
-    qx(git remote add $acc $fork_uri);
-
     print "Done\n";
 }
 

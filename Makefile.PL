@@ -10,6 +10,7 @@ build_requires 'Test::More';
 requires 'File::Temp';
 requires 'App::CLI';
 requires 'File::Path';
+requires 'File::Temp';
 requires 'File::Spec';
 requires 'LWP::Simple';
 requires 'URI';
@@ -18,6 +19,7 @@ requires 'URI';
 requires 'JSON';
 requires 'JSON::XS';
 requires 'HTML::Strip';
+requires 'Term::ReadLine';
 # requires 'IO::Pager';
 
 install_script 'scripts/gh';

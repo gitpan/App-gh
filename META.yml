@@ -28,9 +28,10 @@ requires:
   JSON: 0
   JSON::XS: 0
   LWP::Simple: 0
+  Term::ReadLine: 0
   Text::Wrap: 0
   URI: 0
 resources:
   license: http://dev.perl.org/licenses/
   repository: http://github.com/c9s/App-gh
-version: 0.252
+version: 0.254

@@ -2,7 +2,7 @@ package App::gh;
 use warnings;
 use strict;
 
-our $VERSION = '0.253';
+our $VERSION = '0.254';
 
 __END__
 
@@ -93,6 +93,15 @@ to fork current project:
 
     $ cd miyagawa/Tatsumaki
     $ gh fork
+
+=head1 ALIASES
+
+    a  => all
+    u  => update
+    pu => pull
+    f  => fork
+    n  => network
+    s  => search
 
 =head1 AUTHOR
 

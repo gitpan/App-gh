@@ -2,12 +2,31 @@
 
 ## SYNOPSIS
 
-
     show help message;
 
         $ gh help
 
 ## COMMANDS
+
+
+### commit
+
+commit process:
+
+    % gh commit 
+    # On branch master
+    # Your branch is ahead of 'origin/master' by 3 commits.
+    #
+    # Changed but not updated:
+    #   (use "git add <file>..." to update what will be committed)
+    #   (use "git checkout -- <file>..." to discard changes in working directory)
+    #
+    #	modified:   Changes
+    #	modified:   Makefile.PL
+    #	modified:   README.mkd
+    #
+    no changes added to commit (use "git add" and/or "git commit -a")
+    Show Diff(d), Status(s), Commit(c), Quit(q) :___
 
 ### recent
 
@@ -133,6 +152,15 @@ To merge changes from foo/master and create a tracked branch:
 Run (pull/push) repository changes from/to remotes, and `git remote update --prune`
 
     $ gh update
+
+## COMMAND ALIAS
+
+    "a"  => "all"
+    "u"  => "update"
+    "pu" => "pull"
+    "f"  => "fork"
+    "n"  => "network"
+    "s"  => "search"
 
 ## INSTALLATION
 

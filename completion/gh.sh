@@ -24,6 +24,12 @@ function _gh()
         elif [[ $subcmd == "upload" ]] ; then
             COMPREPLY=( $( compgen -A file -- $cur ) )
             return 0
+        elif [[ $subcmd == "clone" ]] ; then
+            local userid=$cur
+            userid=$( echo $userid | sed -e 's/\/[0-9a-zA-Z.]*$//')
+            repo_list=$( gh list $userid --name )
+            COMPREPLY=( $( compgen -W "$repo_list" -- $cur ) )
+            return 0
         fi
     fi
     if [[ $COMP_WORDS > 1 && $cur =~ ^-- ]] ; then

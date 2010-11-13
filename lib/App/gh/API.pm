@@ -64,10 +64,16 @@ sub repo_info {
     return $ret->{repository};
 }
 
+sub repo_create {
+    my ($class,%args) = @_;
+    my $ret = $class->request( qq{repos/create} , %args );
+    return $ret->{repository};
+}
 
 sub user_info {
     my ($class,$user) = @_;
-    return $class->request( qq{repos/show/$user} );
+    my $ret =  $class->request( qq{repos/show/$user} );
+    return $ret;
 }
 
 sub user_repos {
@@ -75,6 +81,7 @@ sub user_repos {
     my $ret = $class->user_info( $user );
     return $ret->{repositories};
 }
+
 
 
 1;
@@ -100,6 +107,15 @@ Show repository networks of [user]'s [repo].
 =head2 user_info( [Str] user )
 
 Show user info
+
+=head2 repo_create( [Hash] args )
+
+args:
+
+    name =>
+    description =>
+    homepage => 
+    public => 1 for public , 0 for private.
 
 =head2 repo_info( [Str] user, [Str] repo)
 

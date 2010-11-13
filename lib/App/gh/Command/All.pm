@@ -8,14 +8,6 @@ use App::gh::Utils;
 use LWP::Simple qw(get);
 use JSON;
 
-=head1 NAME
-
-App::gh::Command::All - clone all repositories from one
-
-=head1 OPTIONS
-
-=cut
-
 sub options { (
         "verbose" => "verbose",
         "prompt" => "prompt",
@@ -25,7 +17,8 @@ sub options { (
         "ssh" => "protocal_ssh",    # git@github.com:c9s/repo.git
         "http" => "protocal_http",  # http://github.com/c9s/repo.git
         "https" => "https",         # https://github.com/c9s/repo.git
-        "git|ro"   => "git"         # git://github.com/c9s/repo.git
+        "git|ro"   => "git",         # git://github.com/c9s/repo.git
+        "bare" => "bare",
     ) }
 
 
@@ -39,8 +32,8 @@ sub run {
 
     _info "Getting repository list from github: $acc";
 
-    my $data = api_request(  "repos/show/$acc" );
-    return if @{ $data->{repositories} } == 0;
+    my $repolist = App::gh->api->user_repos( $acc );
+    return if @{ $repolist } == 0;
 
     if( $self->{into} ) {
         print STDERR "Cloning all repositories into @{[ $self->{into} ]}\n";
@@ -49,7 +42,7 @@ sub run {
     }
 
     _info "Will clone repositories below:";
-    print " " x 8 . join " " , map { $_->{name} } @{ $data->{repositories} };
+    print " " x 8 . join " " , map { $_->{name} } @{ $repolist };
     print "\n";
 
     if( $self->{prompt} ) {
@@ -61,7 +54,7 @@ sub run {
     }
 
 
-    for my $repo ( @{ $data->{repositories} } ) {
+    for my $repo ( @{ $repolist } ) {
         my $repo_name = $repo->{name};
         my $local_repo_name = $repo_name;
         $local_repo_name =~ s/\.git$//;
@@ -83,18 +76,23 @@ sub run {
 
             chdir $local_repo_name;
             print "Updating $local_repo_name from remotes ...\n";
-            qx{ git pull --rebase --all };
-#             my @remotes = split /\n/,qx{git remote 2>&1 };
-#             for my $r ( @remotes ) {
-#                 print "  Updating [$r]  ";
-#                 qx{git pull --rebase $r master };
-#                 print "  - ok\n";
-#             }
+
+            my $flags = qq();
+            $flags .= qq{ -q } unless $self->{verbose};
+
+            qx{ git pull $flags --rebase --all };
+
+            # switch back
             chdir "../";
         }
         else {
             print "Cloning " . $repo->{name} . " ...\n";
-            qx{ git clone -q $uri };
+
+            my $flags = qq();
+            $flags .= qq{ -q } unless $self->{verbose};
+            $flags .= qq{ --bare } if $self->{bare};
+
+            qx{ git clone $flags $uri };
         }
     }
 
@@ -105,3 +103,54 @@ sub run {
 
 
 1;
+__END__
+=head1 NAME
+
+App::gh::Command::All - clone/update all repositories from one
+
+=head1 DESCRIPTION
+
+If you need a mirror of repos from one, you will need this command.
+
+If repos exists, clone command will pull changes for these repos from remotes.
+
+=head1 USAGE
+
+    $ mkdir github
+    $ cd github
+
+To clone c9s' repos:
+
+    $ gh all c9s
+
+Once you have all repos cloned, to update them, you only need to run all
+command again:
+
+    $ gh all c9s
+
+=head1 OPTIONS
+
+Genernal Options:
+
+    --prompt        
+        prompt when cloning every repo.
+
+    --into          
+        a path for repos.
+
+    --skip-exists, -s
+        skip existed repos.
+
+    --verbose
+
+Clone URL format:
+
+    --ssh
+
+    --http
+
+    --https
+
+    --git
+
+=cut

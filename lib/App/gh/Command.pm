@@ -1,8 +1,11 @@
 package App::gh::Command;
 use warnings;
 use strict;
+use App::gh;
+use App::gh::Config;
+use App::gh::API;
 use App::gh::Utils;
-    use base qw(App::CLI App::CLI::Command);
+use base qw(App::CLI App::CLI::Command);
 
 use constant global_options => ( 'help' => 'help' );
 
@@ -41,7 +44,7 @@ sub parse_remote_param {
 
 sub get_current_repo {
     my $self = shift;
-    my $config = parse_config( ".git/config" );
+	my $config = App::gh->config->current();
     for my $remote ( values %{ $config->{remote} } ) {
         if( my ($my, $repo) = parse_remote_param( $remote->{url} ) )
         {

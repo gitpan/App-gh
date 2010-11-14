@@ -9,6 +9,19 @@
 ## COMMANDS
 
 
+### import 
+
+Import a repository to github:
+
+    $ gh import
+
+### info
+
+Show repository info:
+
+    $ cd App
+    $ gh info
+
 ### commit
 
 commit process:

@@ -3,10 +3,11 @@ use utf8;
 use warnings;
 use strict;
 use base qw(App::gh::Command);
-use File::Path qw(mkpath);
+use File::Path qw(mkpath rmtree);
 use App::gh::Utils;
 use LWP::Simple qw(get);
 use JSON;
+use Scope::Guard qw(guard);
 
 sub options { (
         "verbose" => "verbose",
@@ -20,6 +21,7 @@ sub options { (
         "https" => "https",         # https://github.com/c9s/repo.git
         "git|ro"   => "git",         # git://github.com/c9s/repo.git
         "bare" => "bare",
+        "f|force" => "force",
     ) }
 
 
@@ -78,29 +80,60 @@ sub run {
 
 
         my $local_repo_dir = $self->{bare} ? "$local_repo_name.git" : $local_repo_name;
-        if( -e $local_repo_dir ) {
+        if( -e $local_repo_dir && !$self->{force} ) {
             print("Found $local_repo_dir, skipped.\n"),next if $self->{skip_exists};
-            print("$local_repo_dir: git-pull cannot be used for bare repository, skipped.\n"),next if $self->{bare};
 
             chdir $local_repo_dir;
+            my $guard = guard { chdir ".." };    # switch back
             print "Updating $local_repo_dir from remotes ...\n";
 
-            my $flags = qq();
-            $flags .= qq{ -q } unless $self->{verbose};
+            if( qx{ git config --get core.bare } =~ /\Atrue\n?\Z/ ) {
+                # "Automatic synchronization of 2 git repositories | Pragmatic Source"
+                # http://www.pragmatic-source.com/en/opensource/tips/automatic-synchronization-2-git-repositories
 
-            qx{ git pull $flags --rebase --all };
+                my ($branch) = map { s/\A\* (.+)/$1/; $_ } grep /\A\*/, split /\n/, qx{ git branch };
+                my $remote = qx{ git config --get branch.$branch.remote };
+                chomp $remote;
+                if ($remote =~ /\A\s*\Z/) {
+                    print STDERR "branch.$branch.remote is not set, skipped.";
+                    next;
+                }
+                unless (grep /^$remote/, split /\n/, qx{ git remote }) {
+                    print "$local_repo_dir: Need remote '$remote' for updating '$local_repo_dir', skipped.";
+                    next;
+                }
+                qx{ git fetch $remote };
+                qx{ git reset --soft refs/remotes/$remote/$branch };
+            }
+            else {
+                my $flags = qq();
+                $flags .= qq{ -q } unless $self->{verbose};
 
-            # switch back
-            chdir "../";
+                qx{ git pull $flags --rebase --all };
+            }
         }
         else {
             print "Cloning " . $repo->{name} . " ...\n";
+
+            if ($self->{force}) {
+                rmtree $local_repo_dir or do {
+                    print STDERR "could not remove '$local_repo_dir', skipped.";
+                    next;
+                };
+            }
 
             my $flags = qq();
             $flags .= qq{ -q } unless $self->{verbose};
             $flags .= qq{ --bare } if $self->{bare};
 
             qx{ git clone $flags $uri };
+
+            if ($self->{bare}) {
+                chdir $local_repo_dir;
+                my $guard = guard { chdir ".." };    # switch back
+                qx{ git remote add gh-bare $uri };
+                qx{ git config branch.master.remote gh-bare };    # initial branch must be master.
+            }
         }
     }
 
@@ -140,16 +173,23 @@ command again:
 
 Genernal Options:
 
-    --prompt        
+    --prompt
         prompt when cloning every repo.
 
-    --into          
-        a path for repos.
+    --into {path}
+        clone repos into a {path}.
 
     --skip-exists, -s
         skip existed repos.
 
     --verbose
+        verbose output.
+
+    --bare
+        clone repos as bare repos.
+
+    --force, -f
+        remove existed repos before cloning repos.
 
 Clone URL format:
 

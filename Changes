@@ -1,5 +1,11 @@
 Revision history for App-gh
 
+0.4
+    - Added --prefix option for "all" command.
+
+0.31-TRIAL
+    - Testing RTHOMPSON's improvents to gh import
+
 0.30
     - support --bare option for 'all' command.
     - fix the bug of 'clone' -k option.

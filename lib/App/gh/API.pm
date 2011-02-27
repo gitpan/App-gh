@@ -22,9 +22,11 @@ sub request {
 
     my $response      =  $ua->post( $url, { login => $github_id, token => $github_token , %args } );
 
-    if ( ! $response->is_success) {
-        die $response->status_line . ': ' . $response->decoded_content;
+    if ( ! $response->is_success ) {
+        warn $response->status_line . ': ' . $response->decoded_content;
+        return;
     }
+
     my $json = $response->decoded_content;  # or whatever
     my $data;
     eval {
@@ -61,19 +63,19 @@ sub repo_network {
 sub repo_info {
     my ( $class, $user, $repo ) = @_;
     my $ret = $class->request(qq{repos/show/$user/$repo});
-    return $ret->{repository};
+    return $ret->{repository} if $ret;
 }
 
 sub repo_create {
     my ($class,%args) = @_;
     my $ret = $class->request( qq{repos/create} , %args );
-    return $ret->{repository};
+    return $ret->{repository} if $ret;
 }
 
 sub user_info {
     my ($class,$user) = @_;
     my $ret =  $class->request( qq{repos/show/$user} );
-    return $ret;
+    return $ret if $ret;
 }
 
 sub user_repos {
@@ -82,7 +84,25 @@ sub user_repos {
     return $ret->{repositories};
 }
 
+# Added by RCT
+sub repo_set_public {
+    my ( $class, $user, $repo, $public ) = @_;
+    my $visibility = $public ? "public" : "private";
+    my $ret = $class->request( qq{repos/set/$visibility/$user/$repo} );
+    return $ret;
+}
 
+sub repo_set_info {
+    my ( $class, $user, $repo, %args ) = @_;
+    if (exists $args{public}) {
+        $class->repo_set_public( $user, $repo, $args{public} );
+        delete $args{public};
+    }
+    # Keys must be in the form 'values[key]'
+    %args = map { ("values[$_]" => $args{$_}) } (keys %args);
+    my $ret = $class->request( qq{repos/show/$user/$repo} , %args );
+    return $ret->{repository};
+}
 
 1;
 __END__
@@ -114,7 +134,7 @@ args:
 
     name =>
     description =>
-    homepage => 
+    homepage =>
     public => 1 for public , 0 for private.
 
 =head2 repo_info( [Str] user, [Str] repo)
@@ -137,5 +157,19 @@ Which returnes a hashref:
         'url' => 'https://github.com/c9s/App-gh',
         'open_issues' => 4
     }
+
+=head2 repo_set_info ( [Str] user, [Str] repo, [Hash] args )
+
+Set the info of a repo. Hash can contain the following args:
+
+    description =>
+    homepage =>
+    public => 1 for public , 0 for private.
+
+These are the same args as repo_create, except for name.
+
+=head2 repo_set_public ( [Str] user, [Str] repo, [Bool] public )
+
+Set a repo to be public or private.
 
 =cut

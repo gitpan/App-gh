@@ -1,9 +1,10 @@
 package App::gh;
 use warnings;
 use strict;
-our $VERSION = '0.4';
+our $VERSION = '0.41';
 use App::gh::Config;
 use App::gh::API;
+require App::gh::Git;
 
 sub config {
     return "App::gh::Config";

@@ -23,8 +23,7 @@ sub request {
     my $response      =  $ua->post( $url, { login => $github_id, token => $github_token , %args } );
 
     if ( ! $response->is_success ) {
-        warn $response->status_line . ': ' . $response->decoded_content;
-        return;
+        die $response->status_line . ': ' . $response->decoded_content;
     }
 
     my $json = $response->decoded_content;  # or whatever
@@ -73,15 +72,22 @@ sub repo_create {
 }
 
 sub user_info {
-    my ($class,$user) = @_;
-    my $ret =  $class->request( qq{repos/show/$user} );
+    my ($class,$user,$page) = @_;
+    $page ||= 1;
+    my $ret =  $class->request( qq{repos/show/$user?page=$page} );
     return $ret if $ret;
 }
 
 sub user_repos {
     my ($class,$user) = @_;
-    my $ret = $class->user_info( $user );
-    return $ret->{repositories};
+    my @repos;
+    my $page;
+    while (1) {
+        my $ret = $class->user_info( $user, $page++ );
+        last unless @{$ret->{repositories}};
+        push @repos, @{$ret->{repositories}};
+    }
+    return \@repos;
 }
 
 # Added by RCT
@@ -106,6 +112,7 @@ sub repo_set_info {
 
 1;
 __END__
+
 =head1 NAME
 
 App::gh::API - Github API class

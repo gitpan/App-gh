@@ -27,7 +27,6 @@ recommends:
 requires:
   App::CLI: 0
   Error: 0
-  Error::Simple: 0
   File::Basename: 0
   File::HomeDir: 0
   File::Path: 0
@@ -45,4 +44,4 @@ resources:
   bugtracker: http://github.com/c9s/App-gh/issues
   license: http://dev.perl.org/licenses/
   repository: http://github.com/c9s/App-gh
-version: 0.43
+version: 0.44

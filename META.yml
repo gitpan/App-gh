@@ -26,7 +26,10 @@ recommends:
   XML::Atom: 0
 requires:
   App::CLI: 0
+  Error: 0
+  Error::Simple: 0
   File::Basename: 0
+  File::HomeDir: 0
   File::Path: 0
   File::Spec: 0
   File::Temp: 0
@@ -39,6 +42,7 @@ requires:
   Text::Wrap: 0
   URI: 0
 resources:
+  bugtracker: http://github.com/c9s/App-gh/issues
   license: http://dev.perl.org/licenses/
   repository: http://github.com/c9s/App-gh
-version: 0.42
+version: 0.43

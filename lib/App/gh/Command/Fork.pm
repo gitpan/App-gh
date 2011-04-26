@@ -42,9 +42,9 @@ $VAR1 = {
 
 sub options { (
     "verbose" => "verbose",
-    "ssh" => "protocal_ssh",    # git@github.com:c9s/repo.git
-    "http" => "protocal_http",  # http://github.com/c9s/repo.git
-    "https" => "https",         # https://github.com/c9s/repo.git
+    "ssh" => "protocol_ssh",    # git@github.com:c9s/repo.git
+    "http" => "protocol_http",  # http://github.com/c9s/repo.git
+    "https" => "protocol_https",         # https://github.com/c9s/repo.git
     "git|ro"   => "git"         # git://github.com/c9s/repo.git
 ) }
 
@@ -83,8 +83,8 @@ sub run {
             for my $remote ( values %{ $config->{remote} } ) {
                 # git://github.com/miyagawa/Tatsumaki.git
                 # http://github.com/miyagawa/Tatsumaki.git
-                if ( $remote->{url} =~ m{(?:git|https?)://github.com/(.*?)/(.*?).git}
-                    || $remote->{url} =~ m{git\@github.com:(.*?)/(.*?).git} )
+                if ( $remote->{url} =~ m{(?:git|https?)://github.com/(.*?)/(.*?)\.git}
+                    || $remote->{url} =~ m{git\@github.com:(.*?)/(.*?)\.git} )
                 {
                     die unless( $1 || $2 );
 
@@ -97,7 +97,12 @@ sub run {
                         die "Remote @{[ $gh_id ]} exists.\n";
                     }
 
-                    my $remote_uri = qq( git\@github.com:@{[ $gh_id ]}/$repo.git);
+                    my $remote_uri;
+                    if ( $self->{protocol_https} ) {
+                        $remote_uri = qq( https://@{[ $gh_id ]}\@github.com/@{[ $gh_id ]}/$repo.git);
+                    } else {
+                        $remote_uri = qq( git\@github.com:@{[ $gh_id ]}/$repo.git);
+                    };
                     _info "Adding remote '@{[ $gh_id ]}' => $remote_uri";
 
                     # url = git@github.com:c9s/App-gh.git

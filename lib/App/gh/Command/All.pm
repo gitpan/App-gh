@@ -16,9 +16,9 @@ sub options { (
         "exclude=s@" => "exclude",
         "s|skip-exists" => "skip_exists",
 
-        "ssh" => "protocal_ssh",    # git@github.com:c9s/repo.git
-        "http" => "protocal_http",  # http://github.com/c9s/repo.git
-        "https" => "https",         # https://github.com/c9s/repo.git
+        "ssh" => "protocol_ssh",    # git@github.com:c9s/repo.git
+        "http" => "protocol_http",  # http://github.com/c9s/repo.git
+        "https" => "protocol_https",         # https://github.com/c9s/repo.git
         "git|ro"   => "git",         # git://github.com/c9s/repo.git
         "bare" => "bare",
         "p|prefix=s" => "prefix",
@@ -109,11 +109,11 @@ sub run {
                 my $remote = qx{ git config --get branch.$branch.remote };
                 chomp $remote;
                 if ($remote =~ /\A\s*\Z/) {
-                    print STDERR "branch.$branch.remote is not set, skipped.";
+                    print STDERR "branch.$branch.remote is not set, skipped.\n";
                     next;
                 }
                 unless (grep /^$remote/, split /\n/, qx{ git remote }) {
-                    print "$local_repo_dir: Need remote '$remote' for updating '$local_repo_dir', skipped.";
+                    print "$local_repo_dir: Need remote '$remote' for updating '$local_repo_dir', skipped.\n";
                     next;
                 }
                 qx{ git fetch $remote };
@@ -130,14 +130,13 @@ sub run {
 
             if ($self->{force}) {
                 rmtree $local_repo_dir or do {
-                    print STDERR "could not remove '$local_repo_dir', skipped.";
+                    print STDERR "could not remove '$local_repo_dir', skipped.\n";
                     next;
                 };
             }
 
             my $flags = qq();
             $flags .= qq{ -q } unless $self->{verbose};
-            $flags .= qq{ --bare } if $self->{bare};
 
             my $reponame =
                     $self->{prefix} 

@@ -1,10 +1,15 @@
 Revision history for App-gh
 
+0.46
+    - Update fix & refactoring from @tyru++.
+
 0.45
     - gh list command default to current github user id.
 
 0.44
     - Remove Error::Simple from Makefile.PL, Add Error.pm instead.
+    - Automatically adding --ssh option for owner's repos (gfx)
+    - Clean up dependencies; JSON is no longer required (gfx)
 
 0.43
     - Thanks to @garu++, patches:

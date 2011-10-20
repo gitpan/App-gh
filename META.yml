@@ -9,7 +9,8 @@ build_requires:
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: 'Module::Install version 1.00'
+dynamic_config: 1
+generated_by: 'Module::Install version 1.03'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -43,4 +44,4 @@ resources:
   bugtracker: http://github.com/c9s/App-gh/issues
   license: http://dev.perl.org/licenses/
   repository: http://github.com/c9s/App-gh
-version: 0.47
+version: 0.48

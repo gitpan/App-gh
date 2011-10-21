@@ -5,6 +5,7 @@ use LWP::UserAgent;
 use URI;
 use JSON::XS;
 use App::gh::Utils;
+use Try::Tiny;
 
 sub new_ua {
     my $class = shift;
@@ -39,20 +40,31 @@ sub request {
     }
     my $response = $ua->$verb($url, %args);
 
-    if ( ! $response->is_success ) {
-        die $response->status_line . ': ' . $response->decoded_content;
+
+    try {
+        my $data;
+        my $content = $response->decoded_content;
+
+        if ( ! $response->is_success ) {
+            # if the error message looks like JSON,
+            # then should provide a readable format.
+            if ( $content =~ m/{"error"/ ) {
+                my $r = decode_json( $content );
+                die join "\n",@$r->{error};
+            }
+
+            die $response->status_line . ': ' . $content;
+        }
+
+        $data = decode_json( $content );
+        die 'Error: Can not decode json. => ' . $content unless $data;
+        die join "\n", @{ $data->{error} } if ref $data->{error} ;
+        die $data->{error} if $data->{error} && ! ref $data->{error};
+        return $data;
     }
-
-    my $json = $response->decoded_content;  # or whatever
-    my $data;
-    eval {
-        $data = decode_json( $json );
+    catch {
+        die $_;
     };
-
-    die "JSON Error:" . $@  if $@ ;
-    die $data->{error} if $data->{error};
-    die "Empty response" unless( $data );
-    return $data;
 }
 
 sub search {

@@ -10,8 +10,8 @@ use Cwd ();
 
 sub options { (
         "verbose" => "verbose",
-        "prompt" => "prompt",
-        "into=s" => "into",
+        "prompt"  => "prompt",
+        "into=s"  => "into",
         "exclude=s@" => "exclude",
         "s|skip-exists" => "skip_exists",
 
@@ -19,6 +19,9 @@ sub options { (
         "http" => "protocol_http",  # http://github.com/c9s/repo.git
         "https" => "protocol_https",         # https://github.com/c9s/repo.git
         "git|ro"   => "protocol_git",         # git://github.com/c9s/repo.git
+
+        "skip-forks" => "skip_forks",  # skip repositories fork from others.
+
         "bare" => "bare",
         "mirror" => "mirror",
         "p|prefix=s" => "prefix",
@@ -30,6 +33,8 @@ sub run {
     my $self = shift;
     my $acc  = shift;
 
+    # turn off buffering
+    $|++; 
 
     $self->{into} ||= $acc;
 
@@ -48,6 +53,7 @@ sub run {
 
     $self->{bare} = 1 if $self->{mirror};
 
+
     _info "Will clone repositories below:";
     print " " x 8 . join " " , map { $_->{name} } @{ $repolist };
     print "\n";
@@ -57,19 +63,10 @@ sub run {
     _info " Bare: on" if $self->{bare};
     _info " Mirror: on" if $self->{mirror};
 
-    if( $self->{prompt} ) {
-        print "Clone them [Y/n] ? ";
-        my $ans = <STDIN>;
-        chomp( $ans );
-        $ans ||= 'Y';
-        return if( $ans =~ /n/ );
-    }
-
     my $exclude = do {
         my $arr = ref $self->{exclude} eq 'ARRAY' ? $self->{exclude} : [];
         +{map { $_ => 1 } @$arr};
     };
-
 
     my $cloned = 0;
 
@@ -77,10 +74,16 @@ sub run {
         return sprintf( "[%d/%d]", ++$cloned , scalar(@$repolist) );
     };
 
-
     for my $repo ( @{ $repolist } ) {
-        my $repo_name = $repo->{name};
+        my $repo_name      = $repo->{name};
+        my $uri            = $self->gen_uri( $acc, $repo_name );
+        my $local_repo_dir = $repo_name;
+        $local_repo_dir    = "$local_repo_dir.git" if $self->{bare};
+        $local_repo_dir    = $self->{prefix} . "-" . $local_repo_dir if $self->{prefix};
 
+        print $uri . "\n" if $self->{verbose};
+
+        # ===> Conditions for skipping repos, to prevent api rate exceeded
         if( $self->{prompt} ) {
             print "Clone $repo_name [Y/n] ? ";
             my $ans = <STDIN>;
@@ -88,19 +91,32 @@ sub run {
             $ans ||= 'Y';
             next if( $ans =~ /n/ );
         }
+
         next if exists $exclude->{$repo_name};
 
-        my $uri = $self->gen_uri( $acc, $repo_name );
-        print $uri . "\n" if $self->{verbose};
+        if( $self->{skip_exists} ) {
+            # Found local repository. Update it.
+            if(-e $local_repo_dir) {
+                _info "Found $local_repo_dir, skipped.";
+                next;
+            }
+        }
 
+        if( $self->{skip_forks} ) {
+            # NOTICE: This might exceed the API rate, careful.
+            # Please put this to the end of condition.
+            my $info = App::gh->api->repo_info( $acc , $repo_name );
+            if($info->{parent}) {
+                _info "Skipping repository with parent: $repo_name";
+                next;
+            }
+        }
 
-        my $local_repo_dir = $repo_name;
-        $local_repo_dir = "$local_repo_dir.git" if $self->{bare};
-        $local_repo_dir = $self->{prefix} . "-" . $local_repo_dir if $self->{prefix};
+        # =================
+        # End of conditions for skipping clone
+
 
         if( -e $local_repo_dir ) {
-            # Found local repository. Update it.
-            print("Found $local_repo_dir, skipped.\n"),next if $self->{skip_exists};
 
             if( $self->{force} ) {
                 rmtree $local_repo_dir or do {
@@ -122,12 +138,20 @@ sub run {
             else {
                 my $flags = qq();
                 $flags .= qq{ -q } unless $self->{verbose};
+
+                # prune deleted remote branches
+                qx{ git remote update --prune };
+
+                # fetch all remotes
+                qx{ git fetch --all };
+
+                # update current working repo
                 qx{ git pull $flags --rebase --all };
             }
         }
         else {
             # No repository was cloned yet. Clone it.
-            print "Cloning " . $repo->{name} . " ... " . $print_progress->() . "\n";
+            _info "Cloning " . $repo->{name} . " ... " . $print_progress->();
 
             my $flags = qq();
             $flags .= qq{ -q }     unless $self->{verbose};
@@ -147,6 +171,7 @@ sub run {
             }
         }
     }
+    print "Done\n";
 }
 
 
@@ -182,10 +207,13 @@ command again:
 Genernal Options:
 
     --prompt
-        prompt when cloning every repo.
+        prompt for each cloning repo.
 
     --into {path}
         clone repos into a {path}.
+
+    --skip-forks
+        skip repos which has a parent repo (fork from others)
 
     --skip-exists, -s
         skip existed repos.

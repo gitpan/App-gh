@@ -39,9 +39,10 @@ requires:
   Scope::Guard: 0
   Term::ReadLine: 0
   Text::Wrap: 0
+  Try::Tiny: 0
   URI: 0
 resources:
   bugtracker: http://github.com/c9s/App-gh/issues
   license: http://dev.perl.org/licenses/
   repository: http://github.com/c9s/App-gh
-version: 0.49
+version: 0.50

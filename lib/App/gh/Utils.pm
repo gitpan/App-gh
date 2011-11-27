@@ -37,6 +37,8 @@ sub print_repo_info {
     prop_line "Created at" , $ret->{created_at};
     prop_line "Pushed at"  , $ret->{pushed_at} || "never";
 
+    prop_line "Parent"     , $ret->{parent} if( $ret->{parent} );
+
     print ' ' x 15 . "* Is private\n"    if $ret->{private};
     print ' ' x 15 . "* Has downloads\n" if $ret->{has_downloads};
     print ' ' x 15 . "* Has issues\n"    if $ret->{has_issues};

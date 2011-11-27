@@ -21,11 +21,14 @@ sub run {
     my ($self) = shift;
 
 
-    eval {
-        require XML::Atom::Feed;
-        require IO::Pager;
-    };
-    die 'Please install XML::Atom::Feed and IO::Pager to enable this command.' if $@;
+    eval { require XML::Atom::Feed; };
+    die 'Please install XML::Atom::Feed to enable this command.' if $@;
+
+    local $STDOUT;
+    eval { require IO::Pager; };
+    unless( $@ ) {
+        $STDOUT = new IO::Pager       *STDOUT;
+    }
 
     my $user  = App::gh->config->github_id();
     my $token = App::gh->config->github_token();
@@ -33,7 +36,6 @@ sub run {
     my $feed = XML::Atom::Feed->new(URI->new( $feed_uri ))
         or die XML::Atom::Feed->error;
 
-    local  $STDOUT = new IO::Pager       *STDOUT;
 
     $Text::Wrap::columns = 90;
 

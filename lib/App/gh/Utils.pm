@@ -2,13 +2,28 @@ package App::gh::Utils;
 use warnings;
 use strict;
 use base qw(Exporter);
+use Term::ANSIColor;
 use URI;
 
 use constant debug => $ENV{DEBUG};
 
 my $screen_width = 92;
 
-our @EXPORT = qw(_debug _info get_github_auth print_list);
+our @EXPORT = qw(_debug _info 
+    info 
+    error
+    notice
+    get_github_auth print_list
+);
+our @EXPORT_OK = qw(
+    generate_repo_uri 
+    run_git_fetch
+    build_git_clone_command
+    build_git_fetch_command
+    dialog_yes_default
+);
+
+sub build_git_fetch_command;
 
 # XXX: move this to logger....... orz
 sub _debug {
@@ -98,5 +113,103 @@ sub print_list {
 
     }
 }
+
+
+
+sub error {
+    my @msg = @_;
+    print STDERR color 'red';
+    print STDERR join("\n", @msg), "\n";
+    print STDERR color 'reset';
+}
+
+sub info { 
+    my @msg = @_;
+    print STDERR color 'green';
+    print STDERR join("\n", @msg), "\n";
+    print STDERR color 'reset';
+}
+
+sub notice {
+    my @msg = @_;
+    print STDERR color 'bold yellow';
+    print STDERR join("\n", @msg), "\n";
+    print STDERR color 'reset';
+}
+
+
+sub run_git_fetch {
+    my @command = build_git_fetch_command @_;
+    my $cmd = join ' ' , @command;
+    my $result = qx($cmd);
+    return $result;
+}
+
+sub build_git_fetch_command {
+    my ($remote,$options) = (undef,{});
+        $remote = shift if ref($_[0]) ne 'HASH';
+        $options = shift if ref($_[0]) eq 'HASH';
+    my @command = qw(git fetch);
+    push @command, $remote if $remote;
+    push @command, '--all' if $options->{all};
+    push @command, '--multiple' if $options->{multiple};
+    push @command, '--tags' if $options->{tags};
+    push @command, '--quiet' if $options->{quiet};
+    push @command, '--recurse-submodules=' 
+            . ($options->{submodules} || 'yes')
+                if $options->{submodules};
+    return @command;
+}
+
+sub build_git_clone_command { 
+    my $uri = shift;;
+    my $options = shift || {};
+    my @command = qw(git clone);
+    push @command, '--bare' if $options->{bare};
+    push @command, '--branch=' . $options->{branch} if $options->{branch};
+    push @command, '--quiet'     if $options->{quiet};
+    push @command, '--mirror'     if $options->{mirror};
+    push @command, '--recursive' if $options->{recursive};
+    push @command, $uri;
+    return @command;
+}
+
+sub generate_repo_uri { 
+    my ($user,$repo,$options) = @_;
+
+    $options->{protocol_ssh} = 1 
+        if App::gh->config->github_id eq $user;
+
+    if( $options->{protocol_git} ) {
+        return sprintf( 'git://github.com/%s/%s.git', $user, $repo );
+    }
+    elsif( $options->{protocol_ssh} ||
+        $options->is_mine($user, $repo) ) {
+        return sprintf( 'git@github.com:%s/%s.git', $user, $repo );
+    }
+    elsif( $options->{protocol_http} ) {
+        return sprintf( 'http://github.com/%s/%s.git', $user , $repo );
+    }
+    elsif( $options->{protocol_https}) {
+        return sprintf( 'https://github.com/%s/%s.git', $user , $repo );
+    }
+    return sprintf( 'git://github.com/%s/%s.git', $user, $repo );
+}
+
+sub dialog_yes_default {
+    my $msg = shift;
+    local $|;
+    print STDERR $msg;
+    print STDERR ' (Y/n) ';
+
+    my $a = <STDIN>;
+    chomp $a;
+    if($a =~ /n/) {
+        return 0;
+    }
+    return 1 if $a =~ /y/;
+    return 1; # default to Y
+}
+
 
 1;

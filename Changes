@@ -1,5 +1,11 @@
 Revision history for App-gh
 
+0.61
+    - Fix `clone` command.
+    - Fix `all` command.
+    - Update documenation for setup and installation.
+    - Refactor git command functions
+    - Use Term::ANSIColor
 
 0.60
     - Support Net::GitHub::V3
@@ -7,8 +13,14 @@ Revision history for App-gh
     - Fix import command 
     - Still a lot of things to be fixed.
 
+0.57
+    - bug fixes
+
 0.56
     - Add page command to create gh-pages branch.
+
+0.553
+    - Improve pullreq send command. Add base argument.
 
 0.552
     - let IO::Pager be in requires.

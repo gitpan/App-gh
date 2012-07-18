@@ -1,7 +1,7 @@
 package App::gh;
 use warnings;
 use strict;
-our $VERSION = '0.60';
+our $VERSION = '0.61';
 use App::gh::Config;
 use App::gh::API;
 use Net::GitHub;
@@ -12,10 +12,6 @@ my $GITHUB;
 
 sub config {
     return "App::gh::Config";
-}
-
-sub api {
-    return "App::gh::API";
 }
 
 sub git {
@@ -91,7 +87,7 @@ Some Github operations (like forking) require that your user is authenticated. T
 
   [github]
       user=myuser
-      token=XXX
+      password=XXX
 
 You can find your token by logging into Github, then going to C<"Account Settings"> on the top right corner, then C<"Account Admin">. Make sure to update this information if you ever change your password.
 

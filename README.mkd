@@ -1,61 +1,33 @@
 # App::gh
 
-## SYNOPSIS
-
-    show help message;
-
-        $ gh help
-
-## COMMANDS
+App::gh is an utility helps you operate commands through
+GitHub's API, currently App::gh is migrating to GitHub API v3.
 
 
-### import
+## Installation
 
-Import a repository to github:
+App::gh is written in Perl, so you might need a cpanminus to
+install CPAN modules, to install cpanminus:
 
-    $ gh import
+    $ curl -L http://cpanmin.us | perl - --sudo App::cpanminus
 
-### info
+Now you have `cpanm`, you can install App::gh
 
-Show repository info:
+    $ cpanm https://github.com/c9s/App-gh/zipball/develop
 
-    $ cd App
-    $ gh info
+## Setup
 
-### commit
+To use App::gh, you need to configure your password or OAuth
+token in your `.gitconfig` file, just drop the lines below
+to setup your password:
 
-commit process:
+```ini
+    [github]
+        user = c9s
+        password = your password
+```
 
-    % gh commit
-    # On branch master
-    # Your branch is ahead of 'origin/master' by 3 commits.
-    #
-    # Changed but not updated:
-    #   (use "git add <file>..." to update what will be committed)
-    #   (use "git checkout -- <file>..." to discard changes in working directory)
-    #
-    #	modified:   Changes
-    #	modified:   Makefile.PL
-    #	modified:   README.mkd
-    #
-    no changes added to commit (use "git add" and/or "git commit -a")
-    Show Diff(d), Status(s), Commit(c), Quit(q) :___
-
-### recent
-
-get github recent activities.
-
-    $ gh recent
-
-### list:
-
-list all repository of c9s:
-
-    $ gh list c9s
-
-if you want text wrapped:
-
-    $ WRAP=1 gh list c9s
+## Commands
 
 ### clone
 
@@ -81,15 +53,9 @@ clone from ssh uri:
 
     $ gh clone miyagawa/Plack --ssh
 
-### search
-
-search repository:
-
-    $ gh search Plack
-
 ### all
 
-to clone all repository of miyagawa:
+To clone all repository of miyagawa:
 
     $ gh all miyagawa
 
@@ -104,6 +70,7 @@ to clone all repository of miyagawa:
     $ gh all clkao --ro  # read-only
 
 
+<!--
 ### fork
 
 to fork project:
@@ -231,6 +198,7 @@ And comment to the issue
     "pu" => "pull"
     "se" => "search"
     "up" => "update"
+-->
 
 ## INSTALLATION
 

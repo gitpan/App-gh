@@ -9,7 +9,7 @@ use constant debug => $ENV{DEBUG};
 
 my $screen_width = 92;
 
-our @EXPORT = qw(_debug _info 
+our @EXPORT = qw(_debug
     info 
     error
     notice
@@ -28,10 +28,6 @@ sub build_git_fetch_command;
 # XXX: move this to logger....... orz
 sub _debug {
     print STDERR @_,"\n" if debug;
-}
-
-sub _info {
-    print STDERR @_,"\n";
 }
 
 sub prop_line {
@@ -106,7 +102,7 @@ sub print_list {
         else { print $title;
             print " " x $padding;
             print " - ";
-            $$arg[0] = ' - ' unless $$arg[0];
+            $$arg[0] = ' ' unless $$arg[0];
             print join " " , @$arg;
             print "\n";
         }
@@ -138,6 +134,10 @@ sub notice {
 }
 
 
+#
+# @param string $remote git remote name
+# @param hashref $options  
+# @return string command output
 sub run_git_fetch {
     my @command = build_git_fetch_command @_;
     my $cmd = join ' ' , @command;
@@ -145,35 +145,53 @@ sub run_git_fetch {
     return $result;
 }
 
+
+# 
+# @param string $remote Git remote name
+# @param hashref $options 
+# @return array command list
 sub build_git_fetch_command {
     my ($remote,$options) = (undef,{});
         $remote = shift if ref($_[0]) ne 'HASH';
         $options = shift if ref($_[0]) eq 'HASH';
     my @command = qw(git fetch);
-    push @command, $remote if $remote;
-    push @command, '--all' if $options->{all};
+    push @command, $remote      if $remote;
+    push @command, '--all'      if $options->{all};
     push @command, '--multiple' if $options->{multiple};
-    push @command, '--tags' if $options->{tags};
-    push @command, '--quiet' if $options->{quiet};
+    push @command, '--tags'     if $options->{tags};
+    push @command, '--quiet'    if $options->{quiet};
+    push @command, '--verbose'  if $options->{verbose};
     push @command, '--recurse-submodules=' 
             . ($options->{submodules} || 'yes')
                 if $options->{submodules};
     return @command;
 }
 
+
+# 
+# @param string $uri
+# @param hashref $options default { }
+# @return array command list
 sub build_git_clone_command { 
     my $uri = shift;;
     my $options = shift || {};
     my @command = qw(git clone);
-    push @command, '--bare' if $options->{bare};
+    push @command, '--bare'                         if $options->{bare};
     push @command, '--branch=' . $options->{branch} if $options->{branch};
-    push @command, '--quiet'     if $options->{quiet};
-    push @command, '--mirror'     if $options->{mirror};
-    push @command, '--recursive' if $options->{recursive};
+    push @command, '--quiet'                        if $options->{quiet};
+    push @command, '--mirror'                       if $options->{mirror};
+    push @command, '--recursive'                    if $options->{recursive};
+    push @command, '--origin=' . $options->{origin} if $options->{origin};
+    push @command, '--verbose' if $options->{verbose};
     push @command, $uri;
     return @command;
 }
 
+#
+# @param string $user
+# @param string $repo
+# @param hashref $options
+# return string GitHub Clone URI
 sub generate_repo_uri { 
     my ($user,$repo,$options) = @_;
 
@@ -196,6 +214,10 @@ sub generate_repo_uri {
     return sprintf( 'git://github.com/%s/%s.git', $user, $repo );
 }
 
+
+#
+# @param string $msg
+# @return boolean
 sub dialog_yes_default {
     my $msg = shift;
     local $|;

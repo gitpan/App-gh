@@ -28,15 +28,14 @@ sub options { (
         "https"  => "protocol_https",         # https://github.com/c9s/repo.git
         "git|ro" => "protocol_git",         # git://github.com/c9s/repo.git
 
-        "skip-forks" => "skip_forks",  # skip repositories fork from others.
 
-
-        "tags"    => "tags",
-        "q|quiet" => "quiet",
-        "bare" => "bare",
-        "mirror" => "mirror",
+        "tags"       => "tags",
+        "q|quiet"    => "quiet",
+        "bare"       => "bare",
+        "mirror"     => "mirror",
         "b|branch=s" => "branch",
-        "recursive" => "recursive",
+        "recursive"  => "recursive",
+        "origin"     => "origin",
 
 
         "p|prefix=s" => "prefix",
@@ -44,10 +43,15 @@ sub options { (
     ) }
 
 
+# 
+# @param string $user github user id
+# @param string $type github repository type (all,owner,member,all)
+# @see http://developer.github.com/v3/repos/
+
 sub run {
     my $self = shift;
     my $user = shift;
-    my $type = shift || 'owner';  # all, owner, member. default: all.
+    my $type = shift || 'owner';
 
     # turn off buffering
     $|++; 
@@ -238,9 +242,6 @@ Genernal Options:
 
     --into {path}
         clone repos into a {path}.
-
-    --skip-forks
-        skip repos which has a parent repo (fork from others)
 
     --skip-exists, -s
         skip existed repos.

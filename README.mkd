@@ -13,7 +13,7 @@ install CPAN modules, to install cpanminus:
 
 Now you have `cpanm`, you can install App::gh
 
-    $ cpanm https://github.com/c9s/App-gh/zipball/develop
+    $ sudo cpanm https://github.com/c9s/App-gh/zipball/develop
 
 ## Setup
 
@@ -27,47 +27,119 @@ to setup your password:
         password = your password
 ```
 
+To use OAuth token, you need to set your OAuth access token:
+
+    [github]
+        user = c9s
+        access_token = SHA1601f1889667efaebb33b8c12572835da3f027f78
+
 ## Commands
 
 ### clone
 
-clone Plack repository from miyagawa:
+Clone Plack repository from miyagawa:
 
-    $ gh clone miyagawa/Plack   # default: read-only
+    $ gh clone miyagawa/Plack
 
-or:
+When cloning repository from others, the default URI is 
+HTTP, which is `read-only`.
+
+When cloning repository from yourself, the default URI is 
+SSH, which is `read & write`.
+
+To specify URI type, you can simply pass options like 
+`--http` for HTTP, `--https` for HTTPS, `--ssh` for SSH,
+`--ro` for read-only URI.  e.g.:
 
     $ gh clone miyagawa Plack
 
-    $ gh clone foo Social --http
+    $ gh clone user repo --http
 
-    $ gh clone foo Social --https
+    $ gh clone user repo --https
+
+    $ gh clone user repo --ssh
 
     $ gh clone clkao Web-Hippie --ro
 
-clone from read-only uri:
-
-    $ gh clone miyagawa/Plack --ro
-
-clone from ssh uri:
+Clone from ssh URI:
 
     $ gh clone miyagawa/Plack --ssh
 
+To fetch related remote of forks, you can specify
+`--forks` option. this command allows you to download 
+commits from others' fork.
+
+    $ gh clone c9s App-gh --forks
+
+To clone repository and set the default remote name instead 
+of `origin`, you can specify `--origin` option:
+
+    $ gh clone c9s App-gh --origin github
+
 ### all
 
-To clone all repository of miyagawa:
+By using the `all` command, you can clone all repositories
+from an user.
+
+Below is the basic form:
+
+    $ gh all [user] [type]
+
+`[type]` can be `member`, `all`, `owner`. if you specify 
+`all` then all repositories including fork projects will be 
+cloned. if you specify `owner`, then only the owner's
+projects will be cloned.
+
+For example, to clone all repositories of miyagawa:
 
     $ gh all miyagawa
 
-    $ gh all facebook --into facebook
+To clone all repositories that owned by facebook:
+
+    $ gh all facebook owner
+
+By specifing `--into` option, you can clone these 
+repositories into a specific directory, for example:
+
+    $ gh all facebook owner --into path/to/facebook
 
     $ gh all perl6 --into perl6-stuff
 
-    $ gh all perl6 --into perl6-stuff --prompt
+To prompt before cloning each repository:
 
-    $ gh all perl6 --into perl6-stuff --verbose --prompt
+    $ gh all perl6 --prompt
 
-    $ gh all clkao --ro  # read-only
+To also fetch tags, you can specify `--tags` option:
+
+    $ gh all facebook --tags
+
+You can also specify a prefix to each repo:
+
+    $ gh all facebook --prefix=facebook-prefix-
+
+To clone these repositories as bared:
+
+    $ gh all facebook --bare
+
+To recursively clone submodules:
+
+    $ gh all perl6 --recursive
+
+
+### import
+
+By using the `import` command, you can import your git
+repository to your GitHub account.
+
+You can simply type below line the upload your project:
+
+    $ gh import
+
+To specify remote name for GitHub, you can use `--remote`
+option.
+
+    $ gh import --remote github
+
 
 
 <!--

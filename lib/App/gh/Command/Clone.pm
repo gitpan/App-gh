@@ -31,7 +31,7 @@ balh
 Git Options:
 
     -b | --branch    clone specific branch.
-
+    --origin
     --recursive, --recurse-submodules
 
         After the clone is created, initialize all submodules within, using their default settings.
@@ -54,6 +54,7 @@ sub options { (
     "b|branch=s" => "branch",
     "mirror"     => "mirror",
     "recursive"  => "recursive",
+    "origin"     => "origin",
 ) }
 
 

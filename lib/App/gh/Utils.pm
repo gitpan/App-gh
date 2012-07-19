@@ -7,7 +7,6 @@ use URI;
 
 use constant debug => $ENV{DEBUG};
 
-my $screen_width = 92;
 
 our @EXPORT = qw(_debug
     info 
@@ -17,9 +16,11 @@ our @EXPORT = qw(_debug
 );
 our @EXPORT_OK = qw(
     generate_repo_uri 
+    git_current_branch
     run_git_fetch
     build_git_clone_command
     build_git_fetch_command
+    build_git_remote_command
     dialog_yes_default
 );
 
@@ -64,14 +65,20 @@ sub print_list {
         $column_w = length($_->[0]) if length($_->[0]) > $column_w ;
     } @lines;
 
+    my $screen_width = 92;
+
     for my $arg ( @lines ) {
         my $title = shift @$arg;
-
         my $padding = int($column_w) - length( $title );
 
-        if ( $ENV{WRAP} && ( $column_w + 3 + length( join " ",@$arg) ) > $screen_width ) {
+        if ( $ENV{WRAP} && ( $column_w + 3 + length( join(" ",@$arg)) ) > $screen_width ) {
             # wrap description
-            my $string = $title . " " x $padding . " - " . join(" ",@$arg) . "\n";
+            my $string = 
+                color('bold white') . 
+                $title .
+                color('reset') . 
+                " " x $padding . " - " . join(" ",@$arg) . "\n";
+
             $string =~ s/\n//g;
 
             my $cnt = 0;
@@ -99,7 +106,10 @@ sub print_list {
             print "\n";
             print "\n" if $wrapped;
         }
-        else { print $title;
+        else { 
+            print color 'bold white';
+            print $title;
+            print color 'reset';
             print " " x $padding;
             print " - ";
             $$arg[0] = ' ' unless $$arg[0];
@@ -167,6 +177,30 @@ sub build_git_fetch_command {
     return @command;
 }
 
+sub build_git_remote_command {
+    my ($subcommand,@args,$options);
+    $subcommand = shift if ! ref $subcommand;
+
+    push @args, shift(@_) while $_[0] && ! ref $_[0];
+    $options    = shift if ref $_[0] eq 'HASH';
+    $options    ||= {};
+
+    my @command = qw(git remote);
+
+    push @command, '--verbose' if $options->{verbose};
+    push @command, $subcommand if $subcommand;
+
+    # git remote update
+    if( $subcommand =~ /update/ ) {
+        push @command, '--prune' if $options->{prune};
+    }
+    elsif( $subcommand =~ /prune/ ) {
+        push @command, '--dry-run' if $options->{dry_run};
+    }
+    push @command, @args if @args;
+    return @command;
+}
+
 
 # 
 # @param string $uri
@@ -185,6 +219,12 @@ sub build_git_clone_command {
     push @command, '--verbose' if $options->{verbose};
     push @command, $uri;
     return @command;
+}
+
+sub git_current_branch {
+    my $ref = qx(git rev-parse --abbrev-ref HEAD);
+    chomp($ref);
+    return $ref;
 }
 
 #
